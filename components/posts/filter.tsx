@@ -48,13 +48,25 @@ export function FilterPosts({
     console.log(`Filter changed: ${type} -> ${value}`);
     const newParams = new URLSearchParams(window.location.search);
     newParams.delete("page");
-    value === "all" ? newParams.delete(type) : newParams.set(type, value);
+    newParams.delete("pagina");
+    
+    // Traduzir parâmetros para português
+    const paramMap: Record<string, string> = {
+      'category': 'categoria',
+      'tag': 'etiqueta',
+      'author': 'autor',
+      'search': 'busca',
+      'page': 'pagina'
+    };
+    
+    const translatedType = paramMap[type] || type;
+    value === "all" ? newParams.delete(translatedType) : newParams.set(translatedType, value);
 
-    router.push(`/posts?${newParams.toString()}`);
+    router.push(`/artigos?${newParams.toString()}`);
   };
 
   const handleResetFilters = () => {
-    router.push("/posts");
+    router.push("/artigos");
   };
 
   const hasTags = tags.length > 0;
@@ -68,10 +80,10 @@ export function FilterPosts({
         onValueChange={(value) => handleFilterChange("tag", value)}
       >
         <SelectTrigger disabled={!hasTags}>
-          {hasTags ? <SelectValue placeholder="All Tags" /> : "No tags found"}
+          {hasTags ? <SelectValue placeholder="Todas As Etiquetas" /> : "Nenhuma etiqueta encontrada"}
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All Tags</SelectItem>
+          <SelectItem value="all">Todas As Tags</SelectItem>
           {tags.map((tag) => (
             <SelectItem key={tag.id} value={tag.id.toString()}>
               {tag.name}
@@ -86,13 +98,13 @@ export function FilterPosts({
       >
         <SelectTrigger disabled={!hasCategories}>
           {hasCategories ? (
-            <SelectValue placeholder="All Categories" />
+            <SelectValue placeholder="Todas As Categorias" />
           ) : (
             "No categories found"
           )}
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All Categories</SelectItem>
+          <SelectItem value="all">Todas As Categorias</SelectItem>
           {categories.map((category) => (
             <SelectItem key={category.id} value={category.id.toString()}>
               {category.name}
@@ -107,13 +119,13 @@ export function FilterPosts({
       >
         <SelectTrigger disabled={!hasAuthors} className="text-center">
           {hasAuthors ? (
-            <SelectValue placeholder="All Authors" />
+            <SelectValue placeholder="Todos Os Autores" />
           ) : (
             "No authors found"
           )}
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All Authors</SelectItem>
+          <SelectItem value="all">Todos Os Autores</SelectItem>
           {authors.map((author) => (
             <SelectItem key={author.id} value={author.id.toString()}>
               {author.name}
@@ -123,7 +135,7 @@ export function FilterPosts({
       </Select>
 
       <Button variant="outline" onClick={handleResetFilters}>
-        Reset Filters
+        Limpar Filtros
       </Button>
     </div>
   );

@@ -180,8 +180,21 @@ export async function getPostsPaginated(
     cacheTags.push(`posts-tag-${filterParams.tag}`);
   }
   if (filterParams?.category) {
-    query.categories = filterParams.category;
-    cacheTags.push(`posts-category-${filterParams.category}`);
+    // Convert category slug to ID if it's not a number
+    if (isNaN(Number(filterParams.category))) {
+      try {
+        const category = await getCategoryBySlug(filterParams.category);
+        if (category) {
+          query.categories = category.id;
+          cacheTags.push(`posts-category-${category.id}`);
+        }
+      } catch (error) {
+        console.warn(`Category slug "${filterParams.category}" not found`);
+      }
+    } else {
+      query.categories = filterParams.category;
+      cacheTags.push(`posts-category-${filterParams.category}`);
+    }
   }
 
   return wordpressFetchPaginatedGraceful<Post>(
@@ -205,7 +218,21 @@ export async function getAllPosts(filterParams?: {
   if (filterParams?.search) query.search = filterParams.search;
   if (filterParams?.author) query.author = filterParams.author;
   if (filterParams?.tag) query.tags = filterParams.tag;
-  if (filterParams?.category) query.categories = filterParams.category;
+  if (filterParams?.category) {
+    // Convert category slug to ID if it's not a number
+    if (isNaN(Number(filterParams.category))) {
+      try {
+        const category = await getCategoryBySlug(filterParams.category);
+        if (category) {
+          query.categories = category.id;
+        }
+      } catch (error) {
+        console.warn(`Category slug "${filterParams.category}" not found`);
+      }
+    } else {
+      query.categories = filterParams.category;
+    }
+  }
 
   return wordpressFetchGraceful<Post[]>("/wp-json/wp/v2/posts", [], query, [
     "wordpress",
@@ -242,6 +269,15 @@ export async function getCategoryById(id: number): Promise<Category> {
 export async function getCategoryBySlug(slug: string): Promise<Category> {
   return wordpressFetch<Category[]>("/wp-json/wp/v2/categories", { slug }).then(
     (categories) => categories[0]
+  );
+}
+
+export async function getCategoriesByParent(parentId: number): Promise<Category[]> {
+  return wordpressFetchGraceful<Category[]>(
+    "/wp-json/wp/v2/categories",
+    [],
+    { parent: parentId },
+    ["wordpress", "categories", `categories-parent-${parentId}`]
   );
 }
 

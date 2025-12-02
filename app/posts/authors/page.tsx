@@ -26,7 +26,7 @@ export default async function Page() {
             <ul className="grid">
               {authors.map((author: any) => (
                 <li key={author.id}>
-                  <Link href={`/posts/?author=${author.id}`}>{author.name}</Link>
+                  <Link href={`/artigos/?autor=${author.id}`}>{author.name}</Link>
                 </li>
               ))}
             </ul>

@@ -1,12 +1,31 @@
 // Define the menu items
 export const mainMenu = {
-  home: "/",
-  about: "https://github.com/9d8dev/next-wp",
-  blog: "/posts",
+  Início: "/",
+  Tutoriais: {
+    href: "/tutorials",
+    submenu: {
+      "WordPress Básico": "/tutorials/wordpress-basico",
+      "WordPress Avançado": "/tutorials/wordpress-avancado",
+      "Otimização": "/tutorials/otimizacao",
+      "Segurança": "/tutorials/seguranca",
+      "cPanel": "/tutorials/cpanel",
+    }
+  },
+  Recursos: {
+    href: "/recursos",
+    submenu: {
+      "Ferramentas Recomendadas": "/recursos/ferramentas-recomendadas",
+      "Plugins Essenciais": "/recursos/plugins-essenciais",
+      "Temas": "/recursos/temas",
+    }
+  },
+  planos: "/planos",
+  Artigos: "/artigos",
+  contato: "/contato",
 };
 
 export const contentMenu = {
-  categories: "/posts/categories",
-  tags: "/posts/tags",
-  authors: "/posts/authors",
+  Categorias: "/categorias",
+  Tags: "/artigos/tags",
+  Autores: "/artigos/authors",
 };

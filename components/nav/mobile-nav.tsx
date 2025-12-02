@@ -6,7 +6,7 @@ import Link, { LinkProps } from "next/link";
 import { useRouter } from "next/navigation";
 
 // Utility Imports
-import { Menu, ArrowRightSquare } from "lucide-react";
+import { Menu, ArrowRightSquare, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Component Imports
@@ -24,11 +24,23 @@ import { Separator } from "@/components/ui/separator";
 import { mainMenu, contentMenu } from "@/menu.config";
 import { siteConfig } from "@/site.config";
 
-export function MobileNav() {
+export function MobileNav({ tutoriaisSubmenu }: { tutoriaisSubmenu?: Record<string, string> }) {
   const [open, setOpen] = React.useState(false);
+  const [openSubmenu, setOpenSubmenu] = React.useState<string | null>(null);
+
+  const toggleSubmenu = (key: string) => {
+    setOpenSubmenu(openSubmenu === key ? null : key);
+  };
+
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      setOpenSubmenu(null);
+    }
+  };
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
         <Button
           variant="ghost"
@@ -51,22 +63,64 @@ export function MobileNav() {
             </MobileLink>
           </SheetTitle>
         </SheetHeader>
-        <ScrollArea className="my-4 h-[calc(100vh-8rem)] pb-10 pl-6">
-          <div className="flex flex-col space-y-3">
-            <h3 className="text-small mt-6">Menu</h3>
-            <Separator />
-            {Object.entries(mainMenu).map(([key, href]) => (
-              <MobileLink key={key} href={href} onOpenChange={setOpen}>
-                {key.charAt(0).toUpperCase() + key.slice(1)}
-              </MobileLink>
-            ))}
-            <h3 className="text-small pt-6">Blog Menu</h3>
-            <Separator />
-            {Object.entries(contentMenu).map(([key, href]) => (
-              <MobileLink key={key} href={href} onOpenChange={setOpen}>
-                {key.charAt(0).toUpperCase() + key.slice(1)}
-              </MobileLink>
-            ))}
+        <ScrollArea className="my-4 h-[calc(100vh-8rem)] pb-10 pr-6">
+          <div className="flex flex-col">
+            {Object.entries(mainMenu).map(([key, value]) => {
+              const href = typeof value === 'string' ? value : value.href;
+              let submenu = typeof value === 'object' && 'submenu' in value ? value.submenu : undefined;
+              
+              // Substituir submenu de Tutoriais por categorias dinâmicas
+              if (key === 'Tutoriais' && tutoriaisSubmenu && Object.keys(tutoriaisSubmenu).length > 0) {
+                submenu = tutoriaisSubmenu as any;
+              }
+              
+              const isSubmenuOpen = openSubmenu === key;
+              
+              return (
+                <div key={key} className="border-b last:border-b-0">
+                  {submenu ? (
+                    <button
+                      onClick={() => toggleSubmenu(key)}
+                      className="flex items-center justify-between w-full py-4 px-4 text-sm font-medium uppercase text-left hover:bg-accent transition-colors"
+                    >
+                      <span>{key.charAt(0).toUpperCase() + key.slice(1)}</span>
+                      <ChevronRight className={cn(
+                        "w-5 h-5 text-muted-foreground transition-transform",
+                        isSubmenuOpen && "rotate-90"
+                      )} />
+                    </button>
+                  ) : (
+                    <MobileLink 
+                      href={href} 
+                      onOpenChange={setOpen}
+                      className="flex items-center justify-between py-4 px-4 text-sm font-medium uppercase hover:bg-accent transition-colors"
+                    >
+                      {key.charAt(0).toUpperCase() + key.slice(1)}
+                    </MobileLink>
+                  )}
+                  
+                  {submenu && (
+                    <div 
+                      className={cn(
+                        "bg-accent/50 overflow-hidden transition-all duration-300 ease-in-out",
+                        isSubmenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                      )}
+                    >
+                      {Object.entries(submenu).map(([subKey, subHref]) => (
+                        <MobileLink 
+                          key={subKey} 
+                          href={subHref} 
+                          onOpenChange={setOpen}
+                          className="flex items-center py-3 pl-8 pr-4 text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                        >
+                          {subKey}
+                        </MobileLink>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </ScrollArea>
       </SheetContent>
@@ -95,7 +149,7 @@ function MobileLink({
         router.push(href.toString());
         onOpenChange?.(false);
       }}
-      className={cn("text-lg", className)}
+      className={className}
       {...props}
     >
       {children}

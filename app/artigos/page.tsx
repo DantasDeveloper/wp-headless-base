@@ -17,7 +17,6 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
-import { Section, Container, Prose } from "@/components/craft";
 import { PostCard } from "@/components/posts/post-card";
 import { FilterPosts } from "@/components/posts/filter";
 import { SearchInput } from "@/components/posts/search-input";
@@ -25,8 +24,8 @@ import { SearchInput } from "@/components/posts/search-input";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Blog Posts",
-  description: "Browse all our blog posts",
+  title: "Artigos",
+  description: "Navegue por todos os nossos artigos",
 };
 
 export const dynamic = "auto";
@@ -37,18 +36,29 @@ export default async function Page({
 }: {
   searchParams: Promise<{
     author?: string;
+    autor?: string;
     tag?: string;
+    etiqueta?: string;
     category?: string;
+    categoria?: string;
     page?: string;
+    pagina?: string;
     search?: string;
+    busca?: string;
   }>;
 }) {
   const params = await searchParams;
-  const { author, tag, category, page: pageParam, search } = params;
+  
+  // Suportar parâmetros em português e inglês
+  const author = params.author || params.autor;
+  const tag = params.tag || params.etiqueta;
+  const category = params.category || params.categoria;
+  const pageParam = params.page || params.pagina;
+  const search = params.search || params.busca;
 
   // Handle pagination
   const page = pageParam ? parseInt(pageParam, 10) : 1;
-  const postsPerPage = 9;
+  const postsPerPage = 6;
 
   // Fetch data based on search parameters using efficient pagination
   const [postsResponse, authors, tags, categories] = await Promise.all([
@@ -61,28 +71,28 @@ export default async function Page({
   const { data: posts, headers } = postsResponse;
   const { total, totalPages } = headers;
 
-  // Create pagination URL helper
+  // Create pagination URL helper (usando parâmetros em português)
   const createPaginationUrl = (newPage: number) => {
     const params = new URLSearchParams();
-    if (newPage > 1) params.set("page", newPage.toString());
-    if (category) params.set("category", category);
-    if (author) params.set("author", author);
-    if (tag) params.set("tag", tag);
-    if (search) params.set("search", search);
-    return `/posts${params.toString() ? `?${params.toString()}` : ""}`;
+    if (newPage > 1) params.set("pagina", newPage.toString());
+    if (category) params.set("categoria", category);
+    if (author) params.set("autor", author);
+    if (tag) params.set("etiqueta", tag);
+    if (search) params.set("busca", search);
+    return `/artigos${params.toString() ? `?${params.toString()}` : ""}`;
   };
 
   return (
-    <Section>
-      <Container>
-        <div className="space-y-8">
-          <Prose>
-            <h2>All Posts</h2>
+    <div className="w-full bg-gray-50 dark:bg-gray-950 py-12">
+      <div className="max-w-[1440px] mx-auto px-4 md:px-6">
+        <div className="w-full max-w-[1320px] mx-auto px-0 md:px-[30px] space-y-8">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Todos os Artigos</h2>
             <p className="text-muted-foreground">
-              {total} {total === 1 ? "post" : "posts"} found
-              {search && " matching your search"}
+              {total} {total === 1 ? "artigo encontrado" : "artigos encontrados"}
+              {search && " na sua busca"}
             </p>
-          </Prose>
+          </div>
 
           <div className="space-y-4">
             <SearchInput defaultValue={search} />
@@ -98,14 +108,14 @@ export default async function Page({
           </div>
 
           {posts.length > 0 ? (
-            <div className="grid md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-[30px]">
               {posts.map((post) => (
                 <PostCard key={post.id} post={post} />
               ))}
             </div>
           ) : (
             <div className="h-24 w-full border rounded-lg bg-accent/25 flex items-center justify-center">
-              <p>Nenhum Post Encontrado</p>
+              <p>Nenhum Artigo Encontrado</p>
             </div>
           )}
 
@@ -158,7 +168,7 @@ export default async function Page({
             </div>
           )}
         </div>
-      </Container>
-    </Section>
+      </div>
+    </div>
   );
 }
